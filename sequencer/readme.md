@@ -1,9 +1,9 @@
 # The sequencer
 
-This section of the tutorial will guide you throught using minnojs sequences.
+This section of the tutorial will guide you through using minnojs sequences.
 It starts at the very essentials of what a sequence is, and walks you through various ways of changing the sequences of your study.
 
-Throught the tutorial we will review multiple techniques and code snippets.
+Throughout the tutorial we will review multiple techniques and code snippets.
 You are encouraged to follow through in a playground of your own.
 Copy the code into your file (and by copy, I mean type it out - you'll learn better), and run it at each step to get a better idea of what is going on.
 
@@ -87,16 +87,8 @@ Following is a rudimentary use of a `random` mixer, it randomly displays either 
 {
     mixer:'random',
     data: [
-        {
-            type:'message',
-            keys: ' ',
-            template: 'Task 1'
-        },
-        {
-            type:'message',
-            keys: ' ',
-            template: 'Task 2'
-        }       
+        { type:'message', keys: ' ', template: 'Task 1' },
+        { type:'message', keys: ' ', template: 'Task 2' }       
     ]
 }
 ```
@@ -105,54 +97,285 @@ Try copying it into your sequence.
 Can you add another element to the mixer? What happens if you add an element before or after the mixer?
 You can see this in action in **Study 2**.
 
-## Study 3
-In this section of the tutorial we will get to know some more mixers and learn how to mannage some more complex sequences.
+## Study 3 - Randomization
 
-In order to get a better intuition for how these mixers work we will use questionnaires.
-Questionnaires are composed of pages.
-Each page can have a *sequence* of one or more questions.
-This will allow us to see a more comprehensive eye of the bird view of each mixer.
-We will not get into all the details of a questionaire in this tutorial, but here are the basics.
-
-A questionnaire page looks like this:
+What happens though, if we want to add some instructions before each task?
+A naive implementation would look something like this:
 
 ```javascript
 {
-    header: 'Page header',
-    questions: [
-        { type:'info', stem: 'This is the text used for this question' }
+    mixer:'random',
+    data: [
+        { type:'message', keys: ' ', template: 'Instructions for task 1' },
+        { type:'message', keys: ' ', template: 'Task 1' },
+        { type:'message', keys: ' ', template: 'Instructions for task 2' },
+        { type:'message', keys: ' ', template: 'Task 2' }       
     ]
 }
 ```
 
-The `header` property of the page controls the page header.
-The `questions` property holds a sequence of questions.
+Try it out!
 
-We will most often use *info* questions in this tutorial - they are essentially questions that only display some text witout any user interactions.
-The `type` of the questions we will use will usually simpley be set to *info*.
-The `stem` sets the exact text that will be used.
-
-Put together a minimal questionnaire for you to tinker with looks like this:
+As you can see the randomizer mixes all tasks together.
+In order to hold a pair of tasks together we will need to use a `wrapper` mixer.
+The `wrapper` mixer tells the `random` mixer that it should not randomize anything within it. 
 
 ```javascript
-define(['questAPI'], function(Quest){
-    var API = new Quest();
-
-    API.addSequence([
+{
+    mixer:'random',
+    data: [
         {
-            header: 'Page header',
-            questions: [
-                { type:'info', stem: 'This is the text used for this question' }
+            mixer:'wrapper',
+            data: [
+                { type:'message', keys: ' ', template: 'Instructions for task 1' },
+                { type:'message', keys: ' ', template: 'Task 1' },
             ]
-        }
-    ]);
-
-    return API.script;
-});
+        },
+        {
+            mixer:'wrapper',
+            data: [
+                { type:'message', keys: ' ', template: 'Instructions for task 2' },
+                { type:'message', keys: ' ', template: 'Task 2' }       
+            ]
+         }
+    ]
+}
 ```
 
+Add a third task that should be randomized.
+After you have that working, see if you can replace "Task 3" With "Task 3a" and "Task 3b".
+Then have the order in which they appear be randomized.
 
+You can see this in action in **Study 3**.
 
+## Study 4 - Multiple conditions
+In the previous sections we discussed how you randomize the order in which your study runs.
+What happens when you need to pick random conditions?
 
+The simplest way to do this is by using the `choose` mixer.
+The `choose` mixer allows you to randomly choose one or more elements from a list.
+See the [documentation](https://minnojs.github.io/minno-quest/0.1/basics/mixer.html#choose) to learn how to choose multiple elements.
+Following is a simple case in which we choose a random priming task and follow it by a common questionnaire.
 
+```javascript
+{
+    mixer:'choose',
+    data:[
+        { type:'message', keys:' ', template: 'Priming 1' },
+        { type:'message', keys:' ', template: 'Priming 2' }
+    ]
+},
+{ type: 'message', keys:' ', template: 'Questionnaire' }
+```
 
+In some occasions you may want to give different weights to the elements, you can do this using the `weightedChoose` mixer.
+The `weights` array assigns a likelihood to each element respectively.
+In the following example the "Priming 1" task has twice the chance to be chosen than the "Priming 2" task.
+
+```javascript
+[
+    {
+        mixer:'weightedChoose',
+        weights: [2,1],
+        data:[
+            { type:'message', keys:' ', template: 'Priming 1' },
+            { type:'message', keys:' ', template: 'Priming 2' }
+        ]
+    },
+    { type: 'message', keys:' ', template: 'Questionnaire' }
+]
+```
+
+Getting back to the simple choose, we sometimes want to choose more than one element.
+For example we may want to choose a task with its instructions.
+The wrapper mixer that we discussed before comes in useful again:
+
+```javascript
+{
+    mixer:'choose',
+    data: [
+        {
+            mixer:'wrapper',
+            data: [
+                { type:'message', keys: ' ', template: 'Instructions for task 1' },
+                { type:'message', keys: ' ', template: 'Task 1' },
+            ]
+        },
+        {
+            mixer:'wrapper',
+            data: [
+                { type:'message', keys: ' ', template: 'Instructions for task 2' },
+                { type:'message', keys: ' ', template: 'Task 2' }       
+            ]
+         }
+    ]
+}
+```
+
+## Study 5 - Branching out
+So far we saw how you can introduce randomness to effect the flow of your sequence.
+Sometimes it will be important for you to change the sequence in response to some previous events.
+
+Minno keeps a record of the "state" of the player.
+The state includes any responses given by the users, as well as additional data saved by you or the player itself.
+You can read more about state in the [documentation](https://minnojs.github.io/minno-quest/0.1/basics/variables.html),
+There are several ways that you can use state to manipulate your studies.
+In this section we will introduce the branching mixers.
+
+Many times you will want to branch your tasks in response to user input (given, for example, within a questionnaire).
+In this case, for the sake of simplicity, we will stick to manually changing the state and seeing how it affects the flow of our study.
+When you are ready to apply the ideas you've learnt here to questionnaires, 
+you should look up the [documentation](https://minnojs.github.io/minno-quest/0.1/basics/variables.html) to see how it is  done.
+
+We will introduce another type of task to simulate user input (though as we will see it is useful in other contexts as well).
+The `set` tasks simply sets a `value` into a `path` within the global object.
+For example, the following task sets the variable `global.personal.name` to "Albert".
+
+```javascript
+{
+    type:'set',
+    path: 'global.personal.name',
+    value: 'Albert'
+}
+```
+
+Let's say that we have a study investigating patients referred to a mental health clinic.
+We start out by asking about their previous experience in therapy, and simulating a response
+(the path used here is what we'd expect from a Minno questionnaire).
+
+```javascript
+{ type:'message', keys: ' ', template: 'Have you ever been in therapy?' },
+{ type:'set', path: 'global.therapy.questions.hadTherapy.response', value: 'no' }
+```
+
+We now want to ask for the details of therapy, but only in case that the patient actually participated.
+For this purpose we will use a branching mixer.
+
+```javascript
+{ type:'message', keys: ' ', template: 'Have you ever been in therapy?' },
+{ type:'set', path: 'global.therapy.questions.hadTherapy.response', value: 'no' },
+{
+    mixer:'branch',
+    conditions: [
+        {compare: 'global.therapy.questions.hadTherapy.response', to: 'yes'}
+    ],
+    data: [
+        { type:'message', keys: ' ', template: 'Please elaborate on your experience in therapy' },
+    ]
+}
+```
+
+Try this snippet out.
+Can you change the `set` task so that you reach the elaboration "questionnaire"?
+(tip: you should be changing the `value`).
+
+We have a time sensitive task that we want to run next.
+But what if we want people suffering from Social Anxiety Disorder to participate in a different task?
+Turns out that the `branch` mixer has an additional property just for this case.
+Instead of adding elements to `data`, you can add them to `elseData` 
+and they will be activated in case the condition turns out to be false.
+
+```javascript
+{ type:'message', keys: ' ', template: 'Do you suffer from Social Anxiety Disorder?' },
+{ type:'set', path: 'global.therapy.questions.hadSAD.response', value: 'yes' },
+{
+    mixer:'branch',
+    conditions: [
+        {compare: 'global.therapy.questions.hadSAD.response', to: 'yes'}
+    ],
+    data: [
+        { type:'message', keys: ' ', template: 'Social Anxiety task' },
+    ],
+    elseData: [
+        { type:'message', keys: ' ', template: 'General population task' },
+    ]
+}
+```
+
+So far we've dealt with simple conditions.
+Simply checking if a single variable is equal to a value.
+Branches support much richer [conditions](https://minnojs.github.io/minno-quest/0.1/basics/mixer.html#conditions).
+Let's say we have a measure for depression (the BDI score) for our patient.
+And we want to choose only patients that have both severe depression (a BDI >= 29) and social anxiety.
+We will want to combine two conditions;
+The first, we already know, requires Social Anxiety:
+
+```javascript
+{compare: 'global.therapy.questions.hadSAD.response', to: 'yes'}
+```
+
+The second requiring severe depression, uses a new property: `operator`.
+The operator defines what type of comparison should be done within the condition.
+In our case we want to use `greaterThanOrEquals`, you can learn more about operators in the [documentation](https://minnojs.github.io/minno-quest/0.1/basics/mixer.html#operators).
+
+```javascript
+{compare: 'global.therapy.questions.BDI.response', operator: 'greaterThanOrEquals', to: 29}
+```
+
+Now, how do we require both of them to be true?
+We could of course nest two branches, one within the other, but that would become cumbersome very fast.
+Instead we can aggregate the conditions, simply by dropping them both into the conditions array.
+See the [documentation](https://minnojs.github.io/minno-quest/0.1/basics/mixer.html#aggregation) for other types of aggregators,
+including OR and more complex conditions.
+
+```javascript
+{ type:'set', path: 'global.therapy.questions.hadSAD.response', value: 'yes' },
+{ type:'set', path: 'global.therapy.questions.hadSAD.response', value: 23},
+{
+    mixer:'branch',
+    conditions: [
+        {compare: 'global.therapy.questions.hadSAD.response', to: 'yes'},
+        {compare: 'global.therapy.questions.BDI.response', operator: 'greaterThanOrEquals', to: 29}
+    ],
+    data: [
+        { type:'message', keys: ' ', template: 'Social Anxiety AND depression task' },
+    ]
+}
+```
+
+See if you can change the conditions so that they include moderate depression as well as sever (BDI >= 20).
+How would you require only moderate depression (BDI between 20 and 28)?
+
+Finally, we want each patient to fill a questionnaire according to their primary diagnosis.
+We could create a branch for each possibility, but the sequencer offers us a more straightforward option.
+The `mulitBranch` mixer allows us to set multiple alternative conditions, as well as set a "default" condition (`elseData`).
+You should note that only the first true condition will be activated.
+
+```javascript
+{ type:'set', path: 'global.therapy.questions.primaryDiagnosis.response', value: 'depression'},
+{
+    mixer: 'multiBranch',
+    branches: [
+        {
+            conditions: [
+                {compare: 'global.therapy.questions.primaryDiagnosis.response', to: 'SAD'},
+            ],
+            data: [
+                { type:'message', keys: ' ', template: 'Social Anxiety Disorder questionnaire' },
+            ]
+        },
+        {
+            conditions: [
+                {compare: 'global.therapy.questions.primaryDiagnosis.response', to: 'depression'},
+            ],
+            data: [
+                { type:'message', keys: ' ', template: 'Major Depression questionnaire' },
+            ]
+        },
+        {
+            conditions: [
+                {compare: 'global.therapy.questions.primaryDiagnosis.response', to: 'panic'},
+            ],
+            data: [
+                { type:'message', keys: ' ', template: 'Panic Disorder questionnaire' },
+            ]
+        }
+    ],
+    elseData: [
+        { type:'message', keys: ' ', template: 'Unspecified Disorder questionnaire' },
+    ]
+}
+```
+
+See if you can split the depression condition into two conditions according to BDI - 
+one with moderate depression (or less), the other with sever depression.
