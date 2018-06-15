@@ -417,7 +417,6 @@ Seeing that the questionnaires are identical it can become a problem to know to 
 In order to solve that problem we use templates (and `tasksMeta`) to dynamically set their name.
 When analyzing the data, the questionnaire names can be sorted according to their names: intensive1 with quest1 and so on.
 
-
 ```javascript
 // set up inheritance
 API.addTasksSet('intensiveTask', [
@@ -439,3 +438,100 @@ API.addSequence([
     }
 ]);
 ```
+
+## Study 7 - Live updates
+In this section we will learn how to use the sequencer to have Minno react to user input in real time.
+
+There are some situation within Minno that a specific mixer can be revisited.
+In particular, this happens in minno-quest. 
+When using the [`prev` feature](https://minnojs.github.io/minno-quest/0.1/manager/templates.html) in pages, 
+users can go back to pages that they've already completed.
+In addition, Minno treats each set of questions in minno-quest as a sequence that is updated every time that the response to an answer is updated.
+
+We will follow this behaviour in a minno-quest questionnaire.
+Following is a minimal template study which we will slowly develop.
+
+```javascript
+define(['questAPI'], function(Quest){
+    var API = new Quest();
+
+    API.addSequence([
+        {
+            header: 'simple',
+            questions: [
+                { type: 'text', stem: 'first question'},
+                { type: 'text', stem: 'second question'}
+            ]
+        }
+    ]);
+
+    return API.script;
+});
+```
+
+This is a simple questionnaire, with a single page element.
+It has the `header` 'simple', and a pair of text `questions`.
+The `stem` is simply the text prompt acompanying the question.
+The `questions` array can be treated as a sequence and used to mix the questions.
+For example, the following page randomizes the order of questions in the page:
+
+```javascript
+{
+    header: 'random',
+    questions: [
+        {
+            mixer:'random',
+            data: [
+                { type: 'text', stem: 'first question'},
+                { type: 'text', stem: 'second question'}
+            ]
+        }
+    ]
+}
+```
+
+We mentioned previously that the sequencer updates all questions each time that a response is updated.
+By default this doesn't really have any effect because mixers are not "remixed" when they are updated.
+Lets activate remixing for the random mixer, and see what happens.
+Simply add the `remix` property to your mixer:
+
+```javascript
+{
+    header: 'random',
+    questions: [
+        {
+            mixer:'random',
+            remix:true,
+            data: [
+                { type: 'text', stem: 'first question'},
+                { type: 'text', stem: 'second question'}
+            ]
+        }
+    ]
+}
+```
+
+At first glance it seems that everything is working the same, but try entering some texts into the inputs.
+Each time an input is updated, the order is re-randomized.
+This doesn't seem something very useful for questionnaires.
+How about we try a different mixer here:
+
+```javascript
+{
+    header: 'random',
+    questions: [
+        { type: 'text', stem: 'Do you speak Spanish? (type "yes")'},
+        {
+            mixer:'branch',
+            conditions: { compare:'current.questions.regular.response', to:'yes' }
+            remix:true,
+            data: [
+                { type: 'text', stem: 'How do you say "Fantastic" in Spanish?'}
+            ]
+        }
+    ]
+}
+```
+
+The branching mixers in combination with `remix` allow you to have questions in your questionnaires that respond directly and immidiately to subject responses.
+This combination is extremely useful in many situations.
