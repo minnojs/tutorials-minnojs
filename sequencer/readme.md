@@ -379,3 +379,63 @@ You should note that only the first true condition will be activated.
 
 See if you can split the depression condition into two conditions according to BDI - 
 one with moderate depression (or less), the other with sever depression.
+
+## Study 6 - Repetition
+
+Imagine that you have a task that is composed of 20 trials (or 200 for that matter).
+How would you go about repeating these trials?
+Instead of manually repeating them 20 times you can use the `repeat` mixer.
+The syntax is simple, all you need to know is that the content of `data` is repeated `times` times.
+
+```javascript
+{
+    mixer:'repeat',
+    times:3,
+    data: [
+        { type:'message', keys: ' ', template: 'Repeated task A' },
+        { type:'message', keys: ' ', template: 'Repeated task B' }
+    ]
+}
+```
+
+Note that "task A" and "task B" are repeated as a pair (A B A B A B).
+
+On its own, the repeat mixer is not very useful.
+Its power come out when combined with the many dynamic aspects of Minno.
+There are many ways that allow an element to behave differently each time that it is encountered;
+[inheritance](https://minnojs.github.io/minno-quest/0.1/basics/inheritance.html), 
+[templates](https://minnojs.github.io/minno-quest/0.1/basics/templates.html), and many other types of custom actions.
+In concert with these features the repeat mixer becomes extremely convinient, and quite likely one of the most commonly used mixers.
+
+Following is an example for a bit more complex sequence using both templates and inheritance.
+If you are not familiar with them yet, don't worry if you don't understand how they work.
+The following sequence displays three sets of intensive task-relaxation-questionnaire.
+
+The task is randomly chosen using `inherit`.
+The relaxation and questionnaires are the same for each iteration.
+Seeing that the questionnaires are identical it can become a problem to know to which task they belong.
+In order to solve that problem we use templates (and `tasksMeta`) to dynamically set their name.
+When analyzing the data, the questionnaire names can be sorted according to their names: intensive1 with quest1 and so on.
+
+
+```javascript
+// set up inheritance
+API.addTasksSet('intensiveTask', [
+    { type:'message', keys: ' ', template: 'intensiveTask1' },
+    { type:'message', keys: ' ', template: 'intensiveTask2' },
+    { type:'message', keys: ' ', template: 'intensiveTask3' }
+]);
+
+// the sequence itself
+API.addSequence([
+    {
+        mixer:'repeat',
+        times: 3,
+        data: [
+            { inherit: {type:'exRandom', set:'intensiveTask'}, name: 'intensive<%= tasksMeta.number %>' },
+            { type:'message', keys: ' ', template: 'Relaxation' },
+            { type:'message', keys: ' ', template: 'Same questionnaire, different name', name: 'quest<%= tasksMeta.number -2 %>'  },
+        ]
+    }
+]);
+```
