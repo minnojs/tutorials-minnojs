@@ -54,7 +54,7 @@ As the name implies, they will be activated sequentially.
 But what happens if you want to randomize the order in which they appear?
 The next section addresses exactly that question.
 
-## Study 2 - mixing things up
+## Study 2 - Random
 In the previous section we saw how to create a straight forward sequence.
 Essentially, you just have an array of elements.
 Many times you will want to manipulate the sequence in which these elements are activated in various ways.
@@ -97,7 +97,7 @@ Try copying it into your sequence.
 Can you add another element to the mixer? What happens if you add an element before or after the mixer?
 You can see this in action in **Study 2**.
 
-## Study 3 - Randomization
+## Study 3 - Groups
 
 What happens though, if we want to add some instructions before each task?
 A naive implementation would look something like this:
@@ -148,7 +148,7 @@ Then have the order in which they appear be randomized.
 
 You can see this in action in **Study 3**.
 
-## Study 4 - Multiple conditions
+## Study 4 - Pick random condition
 In the previous sections we discussed how you randomize the order in which your study runs.
 What happens when you need to pick random conditions?
 
@@ -497,7 +497,7 @@ Simply add the `remix` property to your mixer:
 
 ```javascript
 {
-    header: 'random',
+    header: 'random - not very usefull',
     questions: [
         {
             mixer:'random',
@@ -518,12 +518,12 @@ How about we try a different mixer here:
 
 ```javascript
 {
-    header: 'random',
+    header: 'branch - this is where the magic happens',
     questions: [
         { type: 'text', stem: 'Do you speak Spanish? (type "yes")'},
         {
             mixer:'branch',
-            conditions: { compare:'current.questions.regular.response', to:'yes' }
+            conditions: { compare:'current.questions.regular.response', to:'yes' },
             remix:true,
             data: [
                 { type: 'text', stem: 'How do you say "Fantastic" in Spanish?'}
