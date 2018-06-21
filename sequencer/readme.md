@@ -49,16 +49,17 @@ define(['managerAPI'], function(Manager){
 See if you can add another message to this sequence, labeled "Task 2".
 Hint: elements in an array must be separated by commas.
 
-In **Study 1** you can see a simple sequence of tasks.
-As the name implies, they will be activated sequentially.
-But what happens if you want to randomize the order in which they appear?
+Assuming you addded "Task 2" you now a simple sequence of (two) tasks.
+They will be activated sequentially.
+But what if you want to randomize the order in which they appear?
 The next section addresses exactly that question.
 
 ## Study 2 - Random
 In the previous section we saw how to create a straight forward sequence.
 Essentially, you just have an array of elements.
-Many times you will want to manipulate the sequence in which these elements are activated in various ways.
-In this section we will learn about mixers, and in particular about the `random` mixer.
+Many times you would want to manipulate the sequence in which these elements are activated in various ways. 
+For that you need mixers. 
+In this section we will learn about the `random` mixer.
 
 Mixers allow you to take a part of the sequence and manipulate the way in which it is activated.
 You may insert such an object at any place within a sequence and it will be replaced by the appropriate elements.
@@ -76,11 +77,11 @@ The basic structure of a mixer object is:
 ```
 
 The `mixer` property defines the type of the mixer (see the docs for a list of mixer types).
-The `data` property defines the sub-sequence; an array of elements (either plain objects or mixer objects themselves).
-The mixer transforms the sub-sequence and injects it into the ongoing sequence of elements.
+The `data` property defines the sub-sequence; an array of elements (either plain objects, such as tasks, pages, and trials, or more mixers).
+The mixer generates a sub-sequence and injects it into the ongoing sequence of elements.
 
-Let us see an example. One of the most useful mixers is the random mixer.
-In a nut shell, it takes a sub-sequence and randomizes the order of the elements within.
+One of the most useful mixers is the random mixer.
+It takes a sub-sequence and randomizes the order of the elements within.
 Following is a rudimentary use of a `random` mixer, it randomly displays either *Task 1* and then *Task 2* or *Task 2* and then *Task 1*.
 
 ```javascript
