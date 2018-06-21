@@ -18,7 +18,7 @@ The format for a message task is very simple:
 }
 ```
 
-[Message tasks](https://minnojs.github.io/minno-quest/0.1/manager/messages.html) display a simple text message on the screen (the text is often written in a file, rather than directly in the manager file, but we will enter the text directly, for simplicity). 
+[Message tasks](https://minnojs.github.io/minno-quest/0.1/manager/messages.html) display a simple text message on the screen. 
 The `type` property defines this as a *message* task.
 The `tepmlate` property sets the text to be displayed (we could have used `templateUrl` to refer to an external file, but this way is simpler for short texts).
 The `keys` property sets the key to click in order to proceed to the next task.
