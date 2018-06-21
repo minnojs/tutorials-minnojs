@@ -4,7 +4,7 @@ This section of the tutorial will guide you through using minnojs sequences.
 It starts at the very essentials of what a sequence is, and walks you through various ways of changing the sequences of your study.
 
 Throughout the tutorial we will review multiple techniques and code snippets.
-You are encouraged to follow through in a playground of your own (e.g., [here](https://minnojs.github.io/minno-quest/0.1/manager/playground.html).
+You are encouraged to follow through in a playground of your own (e.g., [here](https://minnojs.github.io/minno-quest/0.1/manager/playground.html)).
 Copy the code into your file (and by copy, I mean type it out - you'll learn better), and run it at each step to get a better idea of what is going on.
 
 For the purpose of this tutorial we will be using the manager and `message` tasks.
