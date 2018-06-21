@@ -49,8 +49,9 @@ define(['managerAPI'], function(Manager){
 See if you can add another message to this sequence, labeled "Task 2".
 Hint: elements in an array must be separated by commas.
 
-Assuming you addded "Task 2" you now a simple sequence of (two) tasks.
-They will be activated sequentially.
+Assuming you addded "Task 2" you now have a simple sequence of (two) tasks. 
+You can see a similar example in **Study 1**.
+The tasks will be activated sequentially. 
 But what if you want to randomize the order in which they appear?
 The next section addresses exactly that question.
 
